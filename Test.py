@@ -56,6 +56,7 @@ for i in range(episodes):
     replay_records = []
     while True:
         a = choose_action(s)
+        print(a)
         next_s, r, done, _ = env.step(a)
         replay_records.append((s, a, r))
 

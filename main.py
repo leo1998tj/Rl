@@ -1,16 +1,54 @@
-# This is a sample Python script.
+import tensorflow as tf
+from tensorflow.keras import layers
+import numpy as np
+import os
+import gym
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+env = gym.make('CartPole-v0')
+env.seed(1)
+env = env.unwrapped
+
+model = tf.keras.Sequential([
+    layers.Dense(16, input_dim=env.observation_space.shape[0], activation="relu"),
+    layers.Dense(env.action_space.n, activation='softmax')
+])
+model.compile(loss="sparse_categorical_crossentropy", optimizer=tf.optimizers.Adam(0.01))
+
+checkpoint_save_path = "./checkpoint/fashion.ckpt"
+
+model.load_weights(checkpoint_save_path)
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def choose_action(observation):
+    state = np.array([observation])
+    action_prob = model.predict(state)  # 获取概率
+
+    # 获取选择左还是右的总概率
+    action_prob = np.sum(action_prob, axis=0)
+    action_prob /= np.sum(action_prob)
+    return np.random.choice([0, 1], p=action_prob)
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+for i_episode in range(1000):
+
+
+    step = 0
+
+    while True:
+        env.render()
+
+        action = choose_action(observation)
+
+        observation_, reward, done, info = env.step(action)
+        step +=1
+
+
+        # print(reward)
+
+        if done:
+            print(step)
+            break
+    observation = observation_
+env.close()
+
